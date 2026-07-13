@@ -301,6 +301,11 @@ function resolveHermesHome() {
     return path.join(path.resolve(USER_DATA_OVERRIDE), 'hermes-home')
   }
 
+  const sourceWorkspaceHome = path.join(SOURCE_REPO_ROOT, 'workspace')
+  if (!IS_PACKAGED && fileExists(path.join(sourceWorkspaceHome, 'config.yaml'))) {
+    return sourceWorkspaceHome
+  }
+
   if (IS_WINDOWS) {
     // A GUI app launched from Explorer inherits the environment block captured
     // at login, so a HERMES_HOME set via `setx` AFTER login is invisible in
