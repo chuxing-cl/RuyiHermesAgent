@@ -1,0 +1,4 @@
+# 占位文件：保证 skills/ 目录随源码进入版本库。
+# 这里只放「你自己新建的技能」。Hermes 自带的 bundled 技能在源码根的 skills/ 目录，
+# 运行时直接从源码读取，不在这里。
+# 运行时状态（.hub/、index-cache/、.bundled_manifest、.curator_state）已被 .gitignore 排除。

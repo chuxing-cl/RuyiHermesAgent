@@ -1,0 +1,22 @@
+# 默认模型：MiniMax Coding Plan（国内端点，Anthropic 兼容）
+# - key 从环境变量 MINIMAX_API_KEY 读取（不写入此文件，随源码走的只有结构）
+# - base_url 走国内端点 api.minimaxi.com（阿里云直连，不经代理）
+model:
+  provider: siliconflow
+  default: Qwen/Qwen3-32B
+  base_url: https://api.siliconflow.cn/v1
+
+  api_mode: chat_completions
+platforms:
+  api_server:
+    port: 8642
+    enabled: true
+mcp_servers: {}
+custom_providers:
+- name: siliconflow
+  base_url: https://api.siliconflow.cn/v1
+  key_env: OPENAI_API_KEY
+  api_mode: chat_completions
+  model: Qwen/Qwen3-32B
+  models:
+    Qwen/Qwen3-32B: {}
