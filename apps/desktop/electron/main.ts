@@ -205,6 +205,22 @@ app.commandLine.appendSwitch('disable-background-timer-throttling')
 
 const SOURCE_REPO_ROOT = path.resolve(APP_ROOT, '../..')
 
+function resolvePortableBundleRoot() {
+  if (!IS_PACKAGED) {
+    return null
+  }
+
+  const root = path.dirname(process.execPath)
+
+  if (directoryExists(path.join(root, 'hermes-agent'))) {
+    return root
+  }
+
+  return null
+}
+
+const PORTABLE_BUNDLE_ROOT = resolvePortableBundleRoot()
+
 // Build-time install stamp -- the git ref this .exe was built against.
 //
 // Written by apps/desktop/scripts/write-build-stamp.mjs during `npm run build`
@@ -299,6 +315,10 @@ function resolveHermesHome() {
 
   if (USER_DATA_OVERRIDE) {
     return path.join(path.resolve(USER_DATA_OVERRIDE), 'hermes-home')
+  }
+
+  if (PORTABLE_BUNDLE_ROOT) {
+    return path.join(PORTABLE_BUNDLE_ROOT, 'portable-home')
   }
 
   const sourceWorkspaceHome = path.join(SOURCE_REPO_ROOT, 'workspace')
@@ -1618,6 +1638,29 @@ function looksLikeDesktopAppBinary(commandPath) {
 
 function isHermesSourceRoot(root) {
   return directoryExists(root) && fileExists(path.join(root, 'hermes_cli', 'main.py'))
+}
+
+function findAncestorHermesSourceRoot(start) {
+  let current = path.resolve(start)
+  const seen = new Set()
+
+  while (current && !seen.has(current)) {
+    seen.add(current)
+
+    if (isHermesSourceRoot(current)) {
+      return current
+    }
+
+    const parent = path.dirname(current)
+
+    if (parent === current) {
+      break
+    }
+
+    current = parent
+  }
+
+  return null
 }
 
 function findPythonForRoot(root) {
@@ -3314,8 +3357,9 @@ function createPythonBackend(root, label, backendArgs, options: any = {}) {
   }
 
   const venvRoot = path.join(root, 'venv')
+  const portablePython = path.join(root, 'python-runtime', IS_WINDOWS ? 'python.exe' : 'bin/python')
   const venvPython = getVenvPython(venvRoot)
-  const command = IS_WINDOWS && fileExists(venvPython) ? venvPython : python
+  const command = IS_WINDOWS && fileExists(portablePython) ? portablePython : IS_WINDOWS && fileExists(venvPython) ? venvPython : python
 
   return {
     kind: 'python',
@@ -3382,7 +3426,34 @@ function resolveHermesBackend(backendArgs) {
     }
   }
 
-  // 3. Bootstrap-complete ACTIVE_HERMES_ROOT -- the canonical install at
+  // 3. Self-contained portable build -- Hermes.exe sits next to a copied
+  //    hermes-agent checkout and portable-home config directory.
+  const bundledSourceRoot = PORTABLE_BUNDLE_ROOT && path.join(PORTABLE_BUNDLE_ROOT, 'hermes-agent')
+
+  if (bundledSourceRoot && isHermesSourceRoot(bundledSourceRoot)) {
+    const backend = createPythonBackend(bundledSourceRoot, `bundled Hermes at ${bundledSourceRoot}`, backendArgs)
+
+    if (backend) {
+      return backend
+    }
+  }
+
+  // 4. Portable dev build inside a checkout -- `npm run pack -- --dir` creates
+  //    apps/desktop/release/win-unpacked/Hermes.exe.  When that unpacked app is
+  //    double-clicked from inside the source tree, prefer the enclosing checkout
+  //    over bootstrap so local green-build validation works without an env var.
+  const portableSourceRoot =
+    IS_PACKAGED && findAncestorHermesSourceRoot(path.dirname(process.execPath))
+
+  if (portableSourceRoot) {
+    const backend = createPythonBackend(portableSourceRoot, `Hermes source at ${portableSourceRoot}`, backendArgs)
+
+    if (backend) {
+      return backend
+    }
+  }
+
+  // 5. Bootstrap-complete ACTIVE_HERMES_ROOT -- the canonical install at
   //    %LOCALAPPDATA%\hermes\hermes-agent (Windows) or ~/.hermes/hermes-agent.
   //    The bootstrap marker means install.ps1 stages finished and the user
   //    completed initial configuration; we trust the install and go straight
@@ -3392,7 +3463,7 @@ function resolveHermesBackend(backendArgs) {
     return createActiveBackend(backendArgs)
   }
 
-  // 4. Existing `hermes` on PATH -- installed via install.ps1 / install.sh from
+  // 6. Existing `hermes` on PATH -- installed via install.ps1 / install.sh from
   //    a previous tool-only setup, or pip-installed system-wide. Use it but
   //    do NOT write a bootstrap marker; the user did this themselves and we
   //    don't want to take ownership of an install we didn't perform.
