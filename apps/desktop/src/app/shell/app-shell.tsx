@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react'
 import type { CSSProperties, ReactNode } from 'react'
 import { useSyncExternalStore } from 'react'
 
+import { Backdrop } from '@/components/Backdrop'
 import { NotificationStack } from '@/components/notifications'
 import { PaneShell } from '@/components/pane-shell'
 import { FloatingPet } from '@/components/pet/floating-pet'
@@ -160,7 +161,7 @@ export function AppShell({
 
   return (
     <SidebarProvider
-      className="h-screen min-h-0 flex-col bg-background"
+      className="h-screen min-h-0 flex-col bg-transparent"
       onOpenChange={setSidebarOpen}
       open={sidebarOpen}
       style={
@@ -185,6 +186,8 @@ export function AppShell({
         } as CSSProperties
       }
     >
+      <Backdrop />
+
       {!hideTitlebarControls && (
         <TitlebarControls leftTools={leftTitlebarTools} onOpenSettings={onOpenSettings} tools={titlebarTools} />
       )}

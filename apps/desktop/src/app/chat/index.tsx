@@ -11,7 +11,6 @@ import { Suspense, useCallback, useMemo, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { Thread } from '@/components/assistant-ui/thread'
-import { Backdrop } from '@/components/Backdrop'
 import { PromptOverlays } from '@/components/prompt-overlays'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
@@ -434,11 +433,10 @@ export function ChatView({
   return (
     <div
       className={cn(
-        'relative isolate flex h-full min-w-0 flex-col overflow-hidden bg-(--ui-chat-surface-background)',
+        'relative isolate flex h-full min-w-0 flex-col overflow-hidden bg-[color-mix(in_srgb,var(--ui-chat-surface-background)_28%,transparent)]',
         className
       )}
     >
-      <Backdrop />
       <ChatHeader
         activeSessionId={activeSessionId}
         isRoutedSessionView={isRoutedSessionView}
@@ -458,7 +456,7 @@ export function ChatView({
         suppressMessages={routeSessionMismatch}
       >
         <div
-          className="relative min-h-0 max-w-full flex-1 overflow-hidden bg-(--ui-chat-surface-background) contain-[layout_paint]"
+          className="relative min-h-0 max-w-full flex-1 overflow-hidden bg-transparent contain-[layout_paint]"
           data-slot="composer-bounds"
           {...dropHandlers}
         >
