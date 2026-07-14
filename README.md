@@ -1,7 +1,7 @@
 <p align="center">
   <img src="assets/banner.png" alt="Hermes Agent" width="100%">
 </p>
-<img width="1920" height="1019" alt="微信图片_20260713210247_1218_29" src="https://github.com/user-attachments/assets/8d0d7e34-c6b8-4579-8b1d-1e3c31e53cd6" />
+<img width="1920" height="1020" alt="Snipaste_2026-07-14_16-26-53" src="https://github.com/user-attachments/assets/89ad2e73-cbd7-4b39-8520-3d67879304f8" />
 # Hermes Agent ☤
 <p align="center">
   <a href="https://hermes-agent.nousresearch.com/">Hermes Agent</a> | <a href="https://hermes-agent.nousresearch.com/">Hermes Desktop</a>
